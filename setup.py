@@ -50,10 +50,8 @@ setup(
     maintainer_email='ossmaint@yubico.com',
     url='https://github.com/Yubico/u2fval-client-python',
     packages=['u2fval_client'],
-    setup_requires=['nose>=1.0'],
     install_requires=['requests'],
-    test_suite='nose.collector',
-    tests_require=[''],
+    test_suite='test',
     cmdclass={'release': release},
     classifiers=[
         'License :: OSI Approved :: BSD License',
