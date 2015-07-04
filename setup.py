@@ -52,6 +52,9 @@ setup(
     packages=['u2fval_client'],
     install_requires=['requests'],
     test_suite='test',
+    tests_require=[
+        'httpretty',
+    ],
     cmdclass={'release': release},
     classifiers=[
         'License :: OSI Approved :: BSD License',
