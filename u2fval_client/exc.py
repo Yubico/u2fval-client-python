@@ -47,6 +47,11 @@ class ServerUnreachableException(U2fValClientException):
     "The U2FVAL server cannot be reached"
 
 
+class InvalidResponseException(U2fValClientException):
+
+    "The server sent something which is not valid"
+
+
 class BadAuthException(U2fValClientException):
 
     "Access was denied"

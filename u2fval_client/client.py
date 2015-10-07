@@ -50,13 +50,16 @@ class Client(object):
             status = resp.status_code
             try:
                 data = resp.json()
+                if 'errorCode' in data:
+                    raise exc.from_response(data)
+                if status < 400:
+                    return data
             except ValueError:
-                data = {}
-            if 'errorCode' in data:
-                raise exc.from_response(data)
-            if status < 400:
-                return data
-            elif status == 401:
+                if status < 400:  # OK status, but invalid data.
+                    raise exc.InvalidResponseException(
+                        'The server responded with invalid data')
+
+            if status == 401:
                 raise exc.BadAuthException('Access denied')
             elif status == 404:
                 raise exc.U2fValClientException('Not found')
