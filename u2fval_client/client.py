@@ -55,7 +55,9 @@ class Client(object):
                 if status < 400:
                     return data
             except ValueError:
-                if status < 400:  # OK status, but invalid data.
+                if status == 204 and resp.content == '':
+                    return None  # No content
+                elif status < 400:  # OK status, but invalid data.
                     raise exc.InvalidResponseException(
                         'The server responded with invalid data')
 
