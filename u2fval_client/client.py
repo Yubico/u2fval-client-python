@@ -73,9 +73,21 @@ class Client(object):
     def get_trusted_facets(self):
         return self._req('GET', self._endpoint)
 
+    def get_device(self, username, handle):
+        url = self._endpoint + username + '/' + handle
+        return self._req('GET', url)
+
+    def delete_user(self, username):
+        url = self._endpoint + username + '/'
+        return self._req('DELETE', url)
+
     def list_devices(self, username):
         url = self._endpoint + username + '/'
         return self._req('GET', url)
+
+    def update_device(self, username, handle, properties):
+        url = self._endpoint + username + '/' + handle
+        return self._req('POST', url, json=properties)
 
     def register_begin(self, username):
         url = self._endpoint + username + '/register'

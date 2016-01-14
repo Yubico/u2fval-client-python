@@ -1,3 +1,6 @@
+* Version 1.1.0 (unreleased)
+ ** Added functionality for updating device properties and deleting users.
+
 * Version 1.0.1 (released 2015-10-27)
  ** Fix package so it installs.
 
