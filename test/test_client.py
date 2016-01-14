@@ -9,6 +9,7 @@ from u2fval_client.exc import (
     BadAuthException,
     BadInputException,
     ServerUnreachableException,
+    InvalidResponseException,
     U2fValClientException,
 )
 
@@ -29,7 +30,8 @@ class TestClient(unittest.TestCase):
     def test_get_trusted_facets_empty_response_body(self):
         httpretty.register_uri('GET', 'https://example/',
                                body='')
-        self.assertEqual(self.client.get_trusted_facets(), {})
+        self.assertRaises(InvalidResponseException,
+                          self.client.get_trusted_facets)
 
     def test_get_trusted_facets_error_code(self):
         httpretty.register_uri('GET', 'https://example/',
