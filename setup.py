@@ -25,24 +25,11 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from setuptools import setup
-from release import release
-import re
-
-VERSION_PATTERN = re.compile(r"(?m)^__version__\s*=\s*['\"](.+)['\"]$")
-
-
-def get_version():
-    """Return the current version as defined by u2fval_client/__init__.py."""
-
-    with open('u2fval_client/__init__.py', 'r') as f:
-        match = VERSION_PATTERN.search(f.read())
-        return match.group(1)
+from release import setup
 
 
 setup(
     name='u2fval-client',
-    version=get_version(),
     author='Dain Nilsson',
     author_email='dain@yubico.com',
     description='Python based U2FVAL connector library',
@@ -50,13 +37,11 @@ setup(
     maintainer_email='ossmaint@yubico.com',
     url='https://github.com/Yubico/u2fval-client-python',
     license='BSD 2 clause',
-    packages=['u2fval_client'],
     install_requires=['requests'],
     test_suite='test',
     tests_require=[
         'httpretty',
     ],
-    cmdclass={'release': release},
     classifiers=[
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 2',
