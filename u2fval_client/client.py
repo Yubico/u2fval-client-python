@@ -32,43 +32,41 @@ import json as _json
 
 class Client(object):
 
-    def __init__(self, endpoint, auth=auth.no_auth):
+    def __init__(self, endpoint, auth=auth.no_auth, extra_args={}):
         if endpoint[-1] != '/':
             endpoint = endpoint + '/'
         self._endpoint = endpoint
         self._auth = auth
+        self._extra_args = extra_args
 
-    def _req(self, method, url, json=None, **kwargs):
-        kwargs = self._auth(kwargs)
+    def _req(self, method, url, json=None, resp_is_json=True, **kwargs):
+        args = dict(self._extra_args)
+        args.update(kwargs)
+        args = self._auth(args)
         if json is not None:
-            headers = kwargs.get('headers', {})
+            headers = args.get('headers', {})
             headers['Content-type'] = 'application/json'
-            kwargs['headers'] = headers
-            kwargs['data'] = _json.dumps(json)
-        try:
-            resp = requests.request(method, url, **kwargs)
-            status = resp.status_code
-            try:
-                data = resp.json()
-                if 'errorCode' in data:
-                    raise exc.from_response(data)
-                if status < 400:
-                    return data
-            except ValueError:
-                if status == 204 and resp.content == '':
-                    return None  # No content
-                elif status < 400:  # OK status, but invalid data.
-                    raise exc.InvalidResponseException(
-                        'The server responded with invalid data')
+            args['headers'] = headers
+            args['data'] = _json.dumps(json)
 
+        status = -1
+        try:
+            resp = requests.request(method, url, **args)
+            status = resp.status_code
+            if status < 400:
+                return resp.json() if resp_is_json else resp.content
+            else:
+                raise exc.from_response(resp.json())
+        except requests.ConnectionError as e:
+            raise exc.ServerUnreachableException(str(e))
+        except ValueError:
             if status == 401:
                 raise exc.BadAuthException('Access denied')
             elif status == 404:
                 raise exc.U2fValClientException('Not found')
             else:
-                raise exc.U2fValClientException('Unknown error')
-        except requests.ConnectionError as e:
-            raise exc.ServerUnreachableException(e.message)
+                raise exc.InvalidResponseException(
+                    'The server responded with invalid data')
 
     def get_trusted_facets(self):
         return self._req('GET', self._endpoint)
@@ -77,9 +75,13 @@ class Client(object):
         url = self._endpoint + username + '/' + handle
         return self._req('GET', url)
 
+    def get_certificate(self, username, handle):
+        url = self._endpoint + username + '/' + handle
+        return self._req('GET', url, resp_is_json=False)
+
     def delete_user(self, username):
         url = self._endpoint + username + '/'
-        return self._req('DELETE', url)
+        self._req('DELETE', url, resp_is_json=False)
 
     def list_devices(self, username):
         url = self._endpoint + username + '/'
@@ -89,9 +91,14 @@ class Client(object):
         url = self._endpoint + username + '/' + handle
         return self._req('POST', url, json=properties)
 
-    def register_begin(self, username):
+    def register_begin(self, username, properties=None, challenge=None):
         url = self._endpoint + username + '/register'
-        return self._req('GET', url)
+        params = {}
+        if properties is not None:
+            params['properties'] = _json.dumps(properties)
+        if challenge is not None:
+            params['challenge'] = challenge
+        return self._req('GET', url, params=params)
 
     def register_complete(self, username, register_response, properties=None):
         url = self._endpoint + username + '/register'
@@ -103,15 +110,23 @@ class Client(object):
 
     def unregister(self, username, handle):
         url = self._endpoint + username + '/' + handle
-        return self._req('DELETE', url)
+        self._req('DELETE', url, resp_is_json=False)
 
-    def auth_begin(self, username):
-        url = self._endpoint + username + '/authenticate'
-        return self._req('GET', url)
+    def auth_begin(self, username, properties=None, challenge=None,
+                   handles=None):
+        url = self._endpoint + username + '/sign'
+        params = {}
+        if properties is not None:
+            params['properties'] = _json.dumps(properties)
+        if challenge is not None:
+            params['challenge'] = challenge
+        if handles is not None:
+            params['handle'] = handles
+        return self._req('GET', url, params=params)
 
-    def auth_complete(self, username, authenticate_response, properties=None):
-        url = self._endpoint + username + '/authenticate'
-        data = {'authenticateResponse': _json.loads(authenticate_response)}
+    def auth_complete(self, username, sign_response, properties=None):
+        url = self._endpoint + username + '/sign'
+        data = {'signResponse': _json.loads(sign_response)}
         if properties:
             data['properties'] = properties
         return self._req('POST', url, json=data)
