@@ -49,6 +49,7 @@ setup(
     maintainer='Yubico Open Source Maintainers',
     maintainer_email='ossmaint@yubico.com',
     url='https://github.com/Yubico/u2fval-client-python',
+    license='BSD 2 clause',
     packages=['u2fval_client'],
     install_requires=['requests'],
     test_suite='test',
