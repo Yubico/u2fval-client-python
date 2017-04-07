@@ -2,9 +2,20 @@ language: python
 sudo: false
 
 python:
-  - 2.7
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "pypy-5.4.1"
+  - "pypy3.3-5.2-alpha1"
+
+cache:
+  directories:
+    - $HOME/.cache/pip
 
 install:
+  - pip install --disable-pip-version-check --upgrade pip
   - pip install -e .
 
 script:
